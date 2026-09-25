@@ -14,6 +14,8 @@ export type SignalScores = Record<SignalType, number>;
 export interface Signal {
   companyId: string;
   type: SignalType;
+  externalId?: string;
+  subtype?: string;
   amount?: number;
   count?: number;
   date: string;
@@ -28,8 +30,9 @@ export interface Company {
   address: string;
   city: string;
   county: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
+  geocodeConfidence?: string;
   website?: string;
   foundedYear?: number;
   sector: string;

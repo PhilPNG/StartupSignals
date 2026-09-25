@@ -28,10 +28,20 @@ export function eventWeight(date: string, now = new Date()): number {
 
 /** Decayed, log-scaled strength of one company's events of a single signal type. 0 = no signal. */
 export function rawSignal(events: Signal[], now = new Date()): number {
-  // TODO: signal-specific rules — SBIR Phase II counts double Phase I, share of technical
-  // roles for hiring, recent IP filings only, boost for selective accelerators.
   return events.reduce(
-    (sum, e) => sum + eventWeight(e.date, now) * Math.log10(1 + (e.amount ?? e.count ?? 1)),
+    (sum, e) => {
+      const ageMonths = (now.getTime() - new Date(e.date).getTime()) / MONTH_MS;
+      if (e.type === 'ip' && ageMonths > 36) return sum;
+      const value = Math.log10(1 + (e.amount ?? e.count ?? 1));
+      let multiplier = 1;
+      if (e.type === 'grant' && /phase\s*ii\b/i.test(e.subtype ?? '')) multiplier = 2;
+      if (e.type === 'accelerator' && e.subtype === 'selective') multiplier = 1.5;
+      if (e.type === 'hiring') {
+        const technical = Number(e.subtype?.match(/^technical:(\d+)$/)?.[1] ?? 0);
+        multiplier += (e.count ?? 0) > 0 ? 0.5 * technical / (e.count ?? 1) : 0;
+      }
+      return sum + eventWeight(e.date, now) * value * multiplier;
+    },
     0,
   );
 }
@@ -41,9 +51,9 @@ export function percentileRanks(values: number[]): number[] {
   return values.map((v) => (v > 0 ? (100 * values.filter((x) => x <= v).length) / values.length : 0));
 }
 
-function normalizeWeights(weights: Weights): Weights {
-  const total = SIGNAL_TYPES.reduce((sum, t) => sum + Math.max(0, weights[t]), 0) || 1;
-  return Object.fromEntries(SIGNAL_TYPES.map((t) => [t, Math.max(0, weights[t]) / total])) as Weights;
+function normalizeWeights(weights: Weights, available: Set<string>): Weights {
+  const total = SIGNAL_TYPES.reduce((sum, t) => sum + (available.has(t) ? Math.max(0, weights[t]) : 0), 0) || 1;
+  return Object.fromEntries(SIGNAL_TYPES.map((t) => [t, available.has(t) ? Math.max(0, weights[t]) / total : 0])) as Weights;
 }
 
 /** Reads weight overrides like `?funding=40&ip=25`; anything missing uses the default. */
@@ -66,8 +76,6 @@ export function scoreCompanies(
   weights: Weights = DEFAULT_WEIGHTS,
   now = new Date(),
 ): ScoredCompany[] {
-  const w = normalizeWeights(weights);
-
   const eventsByCompany = new Map<string, Signal[]>();
   for (const s of signals) {
     eventsByCompany.set(s.companyId, [...(eventsByCompany.get(s.companyId) ?? []), s]);
@@ -79,6 +87,9 @@ export function scoreCompanies(
       companies.map((c) => rawSignal((eventsByCompany.get(c.id) ?? []).filter((s) => s.type === t), now)),
     ]),
   ) as Record<keyof Weights, number[]>;
+  // A globally unavailable source cannot silently lower every company's score.
+  const available = new Set(SIGNAL_TYPES.filter((t) => raw[t].some((value) => value > 0)));
+  const w = normalizeWeights(weights, available);
   const pct = Object.fromEntries(SIGNAL_TYPES.map((t) => [t, percentileRanks(raw[t])])) as Record<
     keyof Weights,
     number[]

@@ -4,13 +4,18 @@ import type { CompanyDetail } from '@/lib/types';
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { companies, signals } = loadDataset();
-  const weights = weightsFromParams(new URL(request.url).searchParams);
+  try {
+    const { companies, signals } = await loadDataset();
+    const weights = weightsFromParams(new URL(request.url).searchParams);
 
-  // Score the whole set: percentile ranks only mean something relative to every other company.
-  const company = scoreCompanies(companies, signals, weights).find((c) => c.id === id);
-  if (!company) return Response.json({ error: 'Company not found' }, { status: 404 });
+    // Percentiles are relative to the whole published NJ company set.
+    const company = scoreCompanies(companies, signals, weights).find((c) => c.id === id);
+    if (!company) return Response.json({ error: 'Company not found' }, { status: 404 });
 
-  const detail: CompanyDetail = { ...company, signals: signals.filter((s) => s.companyId === id) };
-  return Response.json(detail);
+    const detail: CompanyDetail = { ...company, signals: signals.filter((s) => s.companyId === id) };
+    return Response.json(detail);
+  } catch (error) {
+    console.error('Company detail unavailable', error);
+    return Response.json({ error: 'Company data unavailable' }, { status: 503 });
+  }
 }
