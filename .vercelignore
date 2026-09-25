@@ -1,0 +1,7 @@
+# CLI deploys upload from the repo root (projects use Root Directory frontend/ and backend/).
+node_modules
+**/.next
+**/dist
+backend/data/raw
+.env*
+!.env.example

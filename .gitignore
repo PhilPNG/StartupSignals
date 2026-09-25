@@ -10,3 +10,5 @@ next-env.d.ts
 # Raw source downloads (Form D ZIPs, SBIR bulk files, ...)
 backend/data/raw/*
 !backend/data/raw/.gitkeep
+
+.vercel
