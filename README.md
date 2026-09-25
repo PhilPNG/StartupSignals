@@ -41,6 +41,14 @@ Form D amounts are issuer-reported securities sold for an offering. They are use
 
 Geocoding uses Mapbox only when `MAPBOX_TOKEN` and `MAPBOX_PERMANENT_GEOCODING_CONFIRMED=true` are set. The public Census batch geocoder supplies exact NJ matches when Mapbox permanent storage is not configured. Companies without verified coordinates remain in the leaderboard and profiles, without a map pin.
 
+### Summary reports
+
+```bash
+npm run enrich -w backend -- --all
+```
+
+This writes an AI summary report for each published company to `company_ai_enrichment`. Before the first run, apply `supabase/migrations/20260925181234_company_ai_enrichment.sql` and set `OPENAI_API_KEY` in `backend/.env.local`. The job sends only a company's published signals to OpenAI and supplies the totals, so the model doesn't calculate them. The prompt forbids investment advice. Without `--all`, the job summarizes the next 5 companies that lack a report. `--limit N` sets a different batch size, `--force` regenerates existing reports, and `--dry-run` prints the evidence without calling OpenAI. The company API returns the stored report as `ai` (or `null`), and the profile card shows it as "Summary report". Page requests never call OpenAI.
+
 ## API and scoring
 
 | Endpoint | Response |
