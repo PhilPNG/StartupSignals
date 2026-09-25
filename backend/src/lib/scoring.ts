@@ -35,6 +35,7 @@ export function rawSignal(events: Signal[], now = new Date()): number {
       const value = Math.log10(1 + (e.amount ?? e.count ?? 1));
       let multiplier = 1;
       if (e.type === 'grant' && /phase\s*ii\b/i.test(e.subtype ?? '')) multiplier = 2;
+      if (e.type === 'ip' && e.subtype === 'issued-patent') multiplier = 1.5;
       if (e.type === 'accelerator' && e.subtype === 'selective') multiplier = 1.5;
       if (e.type === 'hiring') {
         const technical = Number(e.subtype?.match(/^technical:(\d+)$/)?.[1] ?? 0);
