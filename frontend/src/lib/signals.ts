@@ -3,11 +3,10 @@ import type { Signal, SignalType } from '../types';
 /** Plain-language meaning of each score input; shown in weight tooltips and the detail view. */
 export const SIGNAL_DESCRIPTIONS: Record<SignalType, string> = {
   funding: 'Private capital raised, from SEC Form D filings. Scored on amount raised and number of rounds.',
-  grant: 'Non-dilutive R&D awards: SBIR/STTR, NIH and NSF grants. Scored on award dollars; SBIR Phase II counts double.',
+  grant: 'Non-dilutive funding: SBIR/STTR, NIH and NSF grants plus NJEDA program approvals. Scored on award dollars; SBIR Phase II counts double.',
   hiring: 'Open roles and the share of technical roles, from public Greenhouse, Lever and Ashby job boards.',
   ip: 'Recent patent and trademark filings from the USPTO. Older filings are not counted.',
   accelerator: 'Time in an NJ accelerator or university incubator, with a boost for selective programs.',
-  support: 'NJEDA program approvals, public awards and press.',
 };
 
 interface SourceInfo {

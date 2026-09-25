@@ -1,8 +1,8 @@
 // Mirrors backend/src/lib/types.ts — keep the two in sync.
 
-export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator' | 'support';
+export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator';
 
-export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator', 'support'];
+export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator'];
 
 export const SIGNAL_LABELS: Record<SignalType, string> = {
   funding: 'Funding',
@@ -10,7 +10,6 @@ export const SIGNAL_LABELS: Record<SignalType, string> = {
   hiring: 'Hiring',
   ip: 'IP',
   accelerator: 'Accelerator',
-  support: 'Public support',
 };
 
 export type Weights = Record<SignalType, number>;

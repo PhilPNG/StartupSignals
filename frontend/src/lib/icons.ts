@@ -6,7 +6,6 @@ import {
   Dna,
   Factory,
   Gift,
-  Landmark,
   Leaf,
   Lightbulb,
   Rocket,
@@ -22,7 +21,6 @@ export const SIGNAL_ICONS: Record<SignalType, LucideIcon> = {
   hiring: Users,
   ip: Lightbulb,
   accelerator: Rocket,
-  support: Landmark,
 };
 
 const SECTOR_ICONS: Record<string, LucideIcon> = {

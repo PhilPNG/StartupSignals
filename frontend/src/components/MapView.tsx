@@ -18,6 +18,8 @@ interface Props {
   onSelect: (id: string) => void;
   /** Changing this (e.g. the dataset) re-frames the map on the next data load. */
   fitKey?: string;
+  /** Bumped to fly to the selected startup again, even if the selection didn't change. */
+  flyRequest?: number;
 }
 
 function toGeoJson(companies: ScoredCompany[]) {
@@ -34,7 +36,7 @@ function toGeoJson(companies: ScoredCompany[]) {
 }
 
 /** One pin per startup: color = sector, size = score; clustered when zoomed out. */
-export function MapView({ companies, selectedId, onSelect, fitKey }: Props) {
+export function MapView({ companies, selectedId, onSelect, fitKey, flyRequest }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const onSelectRef = useRef(onSelect);
@@ -180,8 +182,8 @@ export function MapView({ companies, selectedId, onSelect, fitKey }: Props) {
       zoom: 12,
       padding: { top: 0, bottom: 0, left: 0, right },
     });
-    // Only fly when the selection changes, not when scores re-rank.
-  }, [selectedId]);
+    // Only fly when the selection changes or a fly is requested, not when scores re-rank.
+  }, [selectedId, flyRequest]);
 
   if (!TOKEN) {
     return (

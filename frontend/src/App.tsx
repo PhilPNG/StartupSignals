@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchCompanies, fetchHealth } from './api';
 import { CompanyDetailView } from './components/CompanyDetailView';
 import { CompanyProfile } from './components/CompanyProfile';
+import { CompanySearch } from './components/CompanySearch';
 import { Filters } from './components/Filters';
 import { Leaderboard } from './components/Leaderboard';
 import { Logo } from './components/Logo';
@@ -32,6 +33,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [flyRequest, setFlyRequest] = useState(0);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
   const favorites = useFavorites();
@@ -98,6 +100,13 @@ export default function App() {
     }
   };
 
+  /** Jump to a searched startup; clear filters first if they would hide it. */
+  const pickFromSearch = (id: string) => {
+    if (!visible.some((c) => c.id === id)) setFilters(EMPTY_FILTERS);
+    selectFromList(id);
+    setFlyRequest((n) => n + 1);
+  };
+
   const views: { id: View; label: string }[] = [
     { id: 'map', label: 'Map' },
     { id: 'sectors', label: 'Sectors' },
@@ -152,11 +161,12 @@ export default function App() {
         <main className="map-view">
           <div className={selectedId ? 'stage has-profile' : 'stage'}>
             <div className="column column-left">
+              <CompanySearch companies={companies} onPick={pickFromSearch} />
               <WeightSliders weights={weights} onChange={setWeights} />
               <Filters filters={filters} onChange={setFilters} sectors={sectors} counties={counties} />
             </div>
             <section className="card map-card" aria-label="Map of startups">
-              <MapView companies={visible} selectedId={selectedId} onSelect={setSelectedId} fitKey={dataset} />
+              <MapView companies={visible} selectedId={selectedId} onSelect={setSelectedId} fitKey={dataset} flyRequest={flyRequest} />
             </section>
             {selectedId && (
               <aside className="column column-right">
