@@ -48,8 +48,17 @@ export interface ScoredCompany extends Company {
   rank: number;
 }
 
+export interface CompanyAiEnrichment {
+  summary: string;
+  momentumSummary: string;
+  keySignals: string[];
+  evidenceSources: string[];
+  generatedAt: string;
+}
+
 export interface CompanyDetail extends ScoredCompany {
   signals: Signal[];
+  ai: CompanyAiEnrichment | null;
 }
 
 export interface Sector {

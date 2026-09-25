@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 3001",
     "typecheck": "tsc --noEmit",
-    "pipeline": "node --env-file-if-exists=.env.local --import tsx src/pipeline/run.ts"
+    "pipeline": "node --env-file-if-exists=.env.local --import tsx src/pipeline/run.ts",
+    "enrich": "tsx --env-file=.env.local src/pipeline/enrichment/run.ts",
+    "export:data": "tsx --env-file=.env.local src/pipeline/export-dataset.ts"
   },
   "dependencies": {
     "next": "^16.3.6",
