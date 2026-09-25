@@ -18,9 +18,11 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
+/** Companies that haven't been geocoded yet have null coordinates and are left off the map. */
+const hasCoordinates = (c: ScoredCompany): c is ScoredCompany & { lat: number; lng: number } =>
+  c.lat != null && c.lng != null;
+
 function toGeoJson(companies: ScoredCompany[]) {
-  const hasCoordinates = (c: ScoredCompany): c is ScoredCompany & { lat: number; lng: number } =>
-    c.lat != null && c.lng != null;
   return {
     type: 'FeatureCollection' as const,
     features: companies.filter(hasCoordinates).map((c) => ({
@@ -141,9 +143,10 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
     source?.setData(toGeoJson(companies));
 
     // Frame the startups once, on first load; later filtering shouldn't move the camera.
-    if (map && source && companies.length > 0 && !fittedRef.current) {
+    const located = companies.filter(hasCoordinates);
+    if (map && source && located.length > 0 && !fittedRef.current) {
       const bounds = new mapboxgl.LngLatBounds();
-      for (const c of companies) bounds.extend([c.lng, c.lat]);
+      for (const c of located) bounds.extend([c.lng, c.lat]);
       map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
       fittedRef.current = true;
     }
@@ -155,9 +158,14 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
 
   useEffect(() => {
     const company = companies.find((c) => c.id === selectedId);
-    if (company && company.lat != null && company.lng != null) {
-      mapRef.current?.flyTo({ center: [company.lng, company.lat], zoom: 12 });
-    }
+    if (!company || !hasCoordinates(company)) return;
+    // Keep the pin clear of the profile drawer when it overlaps the map.
+    const right = window.matchMedia(DRAWER_QUERY).matches ? DRAWER_WIDTH : 0;
+    mapRef.current?.flyTo({
+      center: [company.lng, company.lat],
+      zoom: 12,
+      padding: { top: 0, bottom: 0, left: 0, right },
+    });
     // Only fly when the selection changes, not when scores re-rank.
   }, [selectedId]);
 
