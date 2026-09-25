@@ -52,6 +52,9 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
     });
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
     mapRef.current = map;
+    // Mapbox only listens for window resizes; the map card also resizes when the profile column opens or closes.
+    const resizeObserver = new ResizeObserver(() => map.resize());
+    resizeObserver.observe(containerRef.current);
 
     map.on('load', () => {
       map.addSource('companies', {
@@ -124,6 +127,7 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
     });
 
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
     };

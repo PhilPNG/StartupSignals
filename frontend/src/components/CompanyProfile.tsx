@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, MapPin, MousePointerClick, X } from 'lucide-react';
+import { ExternalLink, MapPin, X } from 'lucide-react';
 import { fetchCompany } from '../api';
 import { SIGNAL_COLORS, sectorDeep } from '../lib/colors';
 import { formatDate, formatUsd } from '../lib/format';
@@ -14,19 +14,6 @@ interface Props {
 
 function signalDetail(s: Signal): string {
   return [s.amount != null ? formatUsd(s.amount) : null, s.description].filter(Boolean).join(' · ');
-}
-
-/** Shown in the profile column before a startup is picked. */
-export function ProfileEmpty() {
-  return (
-    <section className="card profile profile--empty">
-      <span className="empty-icon">
-        <MousePointerClick size={26} aria-hidden="true" />
-      </span>
-      <h2 className="empty-title">Pick a startup</h2>
-      <p className="muted">Select a pin on the map or a row in the list to see its score and the signals behind it.</p>
-    </section>
-  );
 }
 
 /** Who the company is, its score, and exactly which signals produced it — with source links. */
