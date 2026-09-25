@@ -129,13 +129,13 @@ export function CompanyDetailView(props: Props) {
       peers,
       sectorRank: peers.findIndex((c) => c.id === company.id) + 1,
       sources,
+      available,
       weightPct: (t: (typeof SIGNAL_TYPES)[number]) =>
         available.has(t) ? Math.round((Math.max(0, weights[t]) / totalWeight) * 100) : 0,
     };
   }, [company, companies, health, now, weights]);
 
   const SectorIcon = company ? sectorIcon(company.sector) : null;
-  const tracked = new Set(dataset === 'live' ? (health?.activeSignalTypes ?? SIGNAL_TYPES) : SIGNAL_TYPES);
 
   return (
     <div
@@ -279,7 +279,7 @@ export function CompanyDetailView(props: Props) {
                         </th>
                         <td className="num">{facts.weightPct(t)}%</td>
                         <td className="num">
-                          {has ? company.signalScores[t].toFixed(0) : tracked.has(t) ? 'None found' : 'Not tracked yet'}
+                          {has ? company.signalScores[t].toFixed(0) : facts.available.has(t) ? 'None found' : 'Not tracked yet'}
                         </td>
                         <td>
                           <span className="points">
