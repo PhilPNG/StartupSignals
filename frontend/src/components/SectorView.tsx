@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { fetchSectors } from '../api';
 import { sectorColor } from '../lib/colors';
 import { sectorIcon } from '../lib/icons';
-import type { Sector, Weights } from '../types';
+import type { DatasetName, Sector, Weights } from '../types';
 
 interface Props {
   weights: Weights;
+  dataset: DatasetName;
 }
 
 function formatGrowth(growth: number): string {
@@ -14,13 +15,13 @@ function formatGrowth(growth: number): string {
 }
 
 /** Sectors ranked by depth, breadth and year-over-year growth. */
-export function SectorView({ weights }: Props) {
+export function SectorView({ weights, dataset }: Props) {
   const [sectors, setSectors] = useState<Sector[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetchSectors(weights)
+    fetchSectors(weights, dataset)
       .then((s) => {
         if (!cancelled) {
           setSectors(s);
@@ -33,7 +34,7 @@ export function SectorView({ weights }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [weights]);
+  }, [weights, dataset]);
 
   return (
     <section className="sectors" aria-labelledby="sectors-title">

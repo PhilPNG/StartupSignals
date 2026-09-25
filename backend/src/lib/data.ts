@@ -15,9 +15,16 @@ async function allRows<T>(table: 'companies' | 'signals'): Promise<T[]> {
   }
 }
 
-/** Load the active, real company set. Sample mode must be requested explicitly. */
-export async function loadDataset(): Promise<Dataset> {
-  if (process.env.DEMO_SAMPLE_MODE === 'true') {
+export type DatasetName = 'live' | 'sample';
+
+/** `?dataset=sample` serves the labeled sample file; anything else is the live Supabase set. */
+export function datasetFromParams(params: URLSearchParams): DatasetName {
+  return params.get('dataset') === 'sample' ? 'sample' : 'live';
+}
+
+/** Load the active, real company set. Sample data must be requested explicitly. */
+export async function loadDataset(dataset: DatasetName = 'live'): Promise<Dataset> {
+  if (dataset === 'sample' || process.env.DEMO_SAMPLE_MODE === 'true') {
     const sample = path.join(process.cwd(), 'data', 'sample-companies.json');
     return JSON.parse(fs.readFileSync(sample, 'utf8')) as Dataset;
   }

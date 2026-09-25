@@ -2,6 +2,7 @@ import { SIGNAL_COLORS, sectorColor } from '../lib/colors';
 import { scoreTier } from '../lib/format';
 import { SIGNAL_ICONS } from '../lib/icons';
 import { SIGNAL_LABELS, SIGNAL_TYPES, type ScoredCompany } from '../types';
+import { StarButton } from './StarButton';
 
 function SignalIcons({ company }: { company: ScoredCompany }) {
   const present = SIGNAL_TYPES.filter((t) => company.signalScores[t] > 0);
@@ -22,9 +23,12 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onClearFilters: () => void;
+  isFavorite: (id: string) => boolean;
+  onToggleFavorite: (id: string) => void;
 }
 
-export function Leaderboard({ companies, total, loading, selectedId, onSelect, onClearFilters }: Props) {
+export function Leaderboard(props: Props) {
+  const { companies, total, loading, selectedId, onSelect, onClearFilters, isFavorite, onToggleFavorite } = props;
   return (
     <section className="card table-card" aria-labelledby="ranked-title">
       <div className="table-head">
@@ -52,6 +56,9 @@ export function Leaderboard({ companies, total, loading, selectedId, onSelect, o
           <thead>
             <tr>
               <th scope="col">#</th>
+              <th scope="col" className="col-star">
+                <span className="sr-only">Saved</span>
+              </th>
               <th scope="col">Name</th>
               <th scope="col" className="col-sector">
               Sector
@@ -86,6 +93,9 @@ export function Leaderboard({ companies, total, loading, selectedId, onSelect, o
                 }}
               >
                 <td className="col-rank">{c.rank}</td>
+                <td className="col-star">
+                  <StarButton active={isFavorite(c.id)} name={c.name} onToggle={() => onToggleFavorite(c.id)} size={18} />
+                </td>
                 <td className="col-name">
                   <span className="dot name-dot" style={{ background: sectorColor(c.sector) }} />
                   {c.name}

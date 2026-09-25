@@ -16,6 +16,8 @@ interface Props {
   companies: ScoredCompany[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  /** Changing this (e.g. the dataset) re-frames the map on the next data load. */
+  fitKey?: string;
 }
 
 function toGeoJson(companies: ScoredCompany[]) {
@@ -32,11 +34,12 @@ function toGeoJson(companies: ScoredCompany[]) {
 }
 
 /** One pin per startup: color = sector, size = score; clustered when zoomed out. */
-export function MapView({ companies, selectedId, onSelect }: Props) {
+export function MapView({ companies, selectedId, onSelect, fitKey }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const onSelectRef = useRef(onSelect);
   const fittedRef = useRef(false);
+  const selectedRef = useRef(selectedId);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -136,15 +139,29 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
   }, []);
 
   useEffect(() => {
+    selectedRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    fittedRef.current = false;
+  }, [fitKey]);
+
+  useEffect(() => {
     const map = mapRef.current;
     const source = map?.getSource('companies') as mapboxgl.GeoJSONSource | undefined;
     source?.setData(toGeoJson(companies));
 
-    // Frame the startups once, on first load; later filtering shouldn't move the camera.
+    // Frame the startups once per dataset; later filtering shouldn't move the camera.
+    // If a startup is already selected (e.g. "Show on map"), frame it instead of the whole set.
     if (map && source && companies.length > 0 && !fittedRef.current) {
-      const bounds = new mapboxgl.LngLatBounds();
-      for (const c of companies) if (c.lat != null && c.lng != null) bounds.extend([c.lng, c.lat]);
-      if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
+      const selected = companies.find((c) => c.id === selectedRef.current);
+      if (selected && selected.lat != null && selected.lng != null) {
+        map.jumpTo({ center: [selected.lng, selected.lat], zoom: 12 });
+      } else {
+        const bounds = new mapboxgl.LngLatBounds();
+        for (const c of companies) if (c.lat != null && c.lng != null) bounds.extend([c.lng, c.lat]);
+        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
+      }
       fittedRef.current = true;
     }
   }, [companies, loaded]);
