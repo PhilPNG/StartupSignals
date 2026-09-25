@@ -1,0 +1,46 @@
+{
+  "companies": [
+    { "id": "sample-genomics", "name": "Sample Genomics", "address": "123 Sample St", "city": "Princeton", "county": "Mercer", "lat": 40.3573, "lng": -74.6672, "website": "https://example.com", "foundedYear": 2021, "sector": "Biotech", "industryGroup": "Biotechnology", "isSample": true },
+    { "id": "sample-ledger", "name": "Sample Ledger", "address": "123 Sample St", "city": "Jersey City", "county": "Hudson", "lat": 40.7178, "lng": -74.0431, "website": "https://example.com", "foundedYear": 2022, "sector": "Fintech", "industryGroup": "Other Banking and Financial Services", "isSample": true },
+    { "id": "sample-grid", "name": "Sample Grid", "address": "123 Sample St", "city": "Newark", "county": "Essex", "lat": 40.7357, "lng": -74.1724, "website": "https://example.com", "foundedYear": 2020, "sector": "Climate & Energy", "industryGroup": "Energy Conservation", "isSample": true },
+    { "id": "sample-vision-ai", "name": "Sample Vision AI", "address": "123 Sample St", "city": "Hoboken", "county": "Hudson", "lat": 40.744, "lng": -74.0324, "website": "https://example.com", "foundedYear": 2023, "sector": "AI & Software", "industryGroup": "Other Technology", "isSample": true },
+    { "id": "sample-ortho", "name": "Sample Ortho", "address": "123 Sample St", "city": "New Brunswick", "county": "Middlesex", "lat": 40.4862, "lng": -74.4518, "website": "https://example.com", "foundedYear": 2019, "sector": "Medtech", "industryGroup": "Other Health Care", "isSample": true },
+    { "id": "sample-materials", "name": "Sample Materials", "address": "123 Sample St", "city": "Piscataway", "county": "Middlesex", "lat": 40.5549, "lng": -74.4643, "website": "https://example.com", "foundedYear": 2018, "sector": "Advanced Manufacturing", "industryGroup": "Manufacturing", "isSample": true },
+    { "id": "sample-care-robotics", "name": "Sample Care Robotics", "address": "123 Sample St", "city": "Morristown", "county": "Morris", "lat": 40.7968, "lng": -74.4815, "website": "https://example.com", "foundedYear": 2021, "sector": "Medtech", "industryGroup": "Other Health Care", "isSample": true },
+    { "id": "sample-harbor-analytics", "name": "Sample Harbor Analytics", "address": "123 Sample St", "city": "Camden", "county": "Camden", "lat": 39.9259, "lng": -75.1196, "website": "https://example.com", "foundedYear": 2022, "sector": "AI & Software", "industryGroup": "Other Technology", "isSample": true }
+  ],
+  "signals": [
+    { "companyId": "sample-genomics", "type": "funding", "amount": 8500000, "date": "2026-03-10", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Equity round" },
+    { "companyId": "sample-genomics", "type": "funding", "amount": 2000000, "date": "2024-11-02", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Seed round" },
+    { "companyId": "sample-genomics", "type": "grant", "amount": 1100000, "date": "2025-08-15", "source": "SBIR (sample)", "sourceUrl": "https://www.sbir.gov/data-resources", "description": "SBIR Phase II" },
+    { "companyId": "sample-genomics", "type": "grant", "amount": 450000, "date": "2026-01-20", "source": "NIH RePORTER (sample)", "sourceUrl": "https://reporter.nih.gov/", "description": "NIH R43" },
+    { "companyId": "sample-genomics", "type": "ip", "count": 2, "date": "2026-02-01", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "2 patent applications" },
+    { "companyId": "sample-genomics", "type": "accelerator", "count": 1, "date": "2023-06-01", "source": "Accelerator list (sample)", "sourceUrl": "https://example.com", "description": "Accelerator cohort" },
+
+    { "companyId": "sample-ledger", "type": "funding", "amount": 12000000, "date": "2026-06-18", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Series A" },
+    { "companyId": "sample-ledger", "type": "hiring", "count": 15, "date": "2026-09-20", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "15 open roles, 10 technical" },
+    { "companyId": "sample-ledger", "type": "ip", "count": 1, "date": "2025-10-05", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "1 trademark" },
+
+    { "companyId": "sample-grid", "type": "grant", "amount": 250000, "date": "2025-12-01", "source": "NSF (sample)", "sourceUrl": "https://www.nsf.gov/awardsearch/", "description": "NSF SBIR Phase I" },
+    { "companyId": "sample-grid", "type": "support", "amount": 150000, "date": "2026-04-15", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
+    { "companyId": "sample-grid", "type": "accelerator", "count": 1, "date": "2024-09-01", "source": "Accelerator list (sample)", "sourceUrl": "https://example.com", "description": "Incubator resident" },
+    { "companyId": "sample-grid", "type": "hiring", "count": 4, "date": "2026-09-18", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "4 open roles, 2 technical" },
+
+    { "companyId": "sample-vision-ai", "type": "funding", "amount": 3000000, "date": "2026-08-01", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Seed round" },
+    { "companyId": "sample-vision-ai", "type": "hiring", "count": 8, "date": "2026-09-21", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "8 open roles, 7 technical" },
+    { "companyId": "sample-vision-ai", "type": "ip", "count": 1, "date": "2026-05-10", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "1 patent application" },
+
+    { "companyId": "sample-ortho", "type": "grant", "amount": 300000, "date": "2025-04-01", "source": "SBIR (sample)", "sourceUrl": "https://www.sbir.gov/data-resources", "description": "SBIR Phase I" },
+    { "companyId": "sample-ortho", "type": "grant", "amount": 600000, "date": "2026-02-14", "source": "NIH RePORTER (sample)", "sourceUrl": "https://reporter.nih.gov/", "description": "NIH R44" },
+    { "companyId": "sample-ortho", "type": "ip", "count": 3, "date": "2025-09-30", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "3 patent applications" },
+
+    { "companyId": "sample-materials", "type": "grant", "amount": 500000, "date": "2024-07-01", "source": "NSF (sample)", "sourceUrl": "https://www.nsf.gov/awardsearch/", "description": "NSF award" },
+    { "companyId": "sample-materials", "type": "ip", "count": 2, "date": "2025-03-01", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "2 patent applications" },
+
+    { "companyId": "sample-care-robotics", "type": "funding", "amount": 5000000, "date": "2025-11-20", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Seed round" },
+    { "companyId": "sample-care-robotics", "type": "accelerator", "count": 1, "date": "2025-01-15", "source": "Accelerator list (sample)", "sourceUrl": "https://example.com", "description": "Accelerator cohort" },
+
+    { "companyId": "sample-harbor-analytics", "type": "support", "amount": 75000, "date": "2026-07-01", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
+    { "companyId": "sample-harbor-analytics", "type": "hiring", "count": 3, "date": "2026-09-10", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "3 open roles, 2 technical" }
+  ]
+}
