@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChartColumn } from 'lucide-react';
 import { fetchCompanies } from './api';
-import { CompanyProfile, ProfileEmpty } from './components/CompanyProfile';
+import { CompanyProfile } from './components/CompanyProfile';
 import { Filters } from './components/Filters';
 import { Leaderboard } from './components/Leaderboard';
 import { Logo } from './components/Logo';
@@ -63,6 +63,15 @@ export default function App() {
   const counties = useMemo(() => uniqueSorted(companies.map((c) => c.county)), [companies]);
   const hasSample = companies.some((c) => c.isSample);
 
+  /** The list sits below the map, so bring the map and profile back into view. */
+  const selectFromList = (id: string) => {
+    setSelectedId(id);
+    if (window.scrollY > 0) {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+  };
+
   return (
     <div className="app">
       <header className="topbar">
@@ -98,31 +107,29 @@ export default function App() {
       )}
 
       {view === 'map' ? (
-        <main className="workspace">
-          <div className="column column-left">
-            <WeightSliders weights={weights} onChange={setWeights} />
-            <Filters filters={filters} onChange={setFilters} sectors={sectors} counties={counties} />
-          </div>
-          <div className="column column-center">
+        <main className="map-view">
+          <div className={selectedId ? 'stage has-profile' : 'stage'}>
+            <div className="column column-left">
+              <WeightSliders weights={weights} onChange={setWeights} />
+              <Filters filters={filters} onChange={setFilters} sectors={sectors} counties={counties} />
+            </div>
             <section className="card map-card" aria-label="Map of startups">
               <MapView companies={visible} selectedId={selectedId} onSelect={setSelectedId} />
             </section>
-            <Leaderboard
-              companies={visible}
-              total={companies.length}
-              loading={loading}
-              selectedId={selectedId}
-              onSelect={setSelectedId}
-              onClearFilters={() => setFilters(EMPTY_FILTERS)}
-            />
-          </div>
-          <aside className={selectedId ? 'column column-right' : 'column column-right is-empty'}>
-            {selectedId ? (
-              <CompanyProfile id={selectedId} weights={weights} onClose={() => setSelectedId(null)} />
-            ) : (
-              <ProfileEmpty />
+            {selectedId && (
+              <aside className="column column-right">
+                <CompanyProfile id={selectedId} weights={weights} onClose={() => setSelectedId(null)} />
+              </aside>
             )}
-          </aside>
+          </div>
+          <Leaderboard
+            companies={visible}
+            total={companies.length}
+            loading={loading}
+            selectedId={selectedId}
+            onSelect={selectFromList}
+            onClearFilters={() => setFilters(EMPTY_FILTERS)}
+          />
         </main>
       ) : (
         <main className="workspace workspace-sectors">
