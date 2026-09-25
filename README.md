@@ -33,11 +33,14 @@ Run from the repo root. The command logs a separate `ingestion_runs` row for eac
 | NSF Awards | Public API | Fetches recent NJ awards and attaches only high-confidence matches to existing companies |
 | NJEDA and accelerators | Reviewed CSVs in `backend/data/raw/` | Use the headers in `backend/data/templates/`; every row needs a source URL |
 | Greenhouse, Lever, Ashby | Verified board slugs in `backend/data/raw/ats-boards.csv` | Captures a current open-role count and technical-role share; verify the company career-page link first |
-| Adzuna, USPTO, recent SEC search | Access and matching need verification | Logged as skipped so unverified results cannot change scores |
+| USPTO Patent File Wrapper | Public API with `USPTO_API_KEY` in `backend/.env.local` | Searches known companies, requires an exact normalized applicant name and matching NJ city, and scores recent published utility applications or issued patents once per application number |
+| Adzuna, recent SEC search | Access and matching need verification | Logged as skipped so unverified results cannot change scores |
 
 The source downloads under `backend/data/raw/` are ignored by Git. Do not commit downloaded files or API secrets. The pipeline stores public evidence and compact, relevant provider fields in Supabase. Ambiguous same-name/different-city matches go to `match_review`; they do not affect scores until reviewed.
 
 Form D amounts are issuer-reported securities sold for an offering. They are useful as filing evidence, but do not establish a verified venture round or a company's lifetime funding.
+
+The USPTO refresh searches the existing company list, so it does not create companies from an IP filing. It uses public utility patent applications and grants from the Patent File Wrapper; trademarks and unpublished applications are outside this adapter. It takes a few minutes because searches are paced, and a failed search retains the last successful USPTO refresh. Run `PIPELINE_SOURCES=uspto npm run pipeline -w backend` to refresh it alone.
 
 Geocoding uses Mapbox only when `MAPBOX_TOKEN` and `MAPBOX_PERMANENT_GEOCODING_CONFIRMED=true` are set. The public Census batch geocoder supplies exact NJ matches when Mapbox permanent storage is not configured. Companies without verified coordinates remain in the leaderboard and profiles, without a map pin.
 
@@ -64,4 +67,4 @@ The company and sector endpoints accept weight overrides such as `?funding=40&ip
 
 ## Current source coverage
 
-As of September 25, 2026, the connected Supabase project contains 247 real companies and 632 matched signals: 55 SEC Form D funding filings, 522 SBIR awards, 45 NIH awards, and 10 NSF awards. Census geocoded 183 company addresses and assigned their counties. Hiring, IP, NJEDA, and accelerator data require verified board slugs, provider access, or reviewed input files before they appear in rankings. These counts will change on refresh; use `/api/health` for the current source status.
+As of September 25, 2026, the connected Supabase project contains 247 real companies and 761 matched signals: 55 SEC Form D funding filings, 522 SBIR awards, 45 NIH awards, 10 NSF awards, and 129 USPTO patent applications across 46 companies. Census geocoded 183 company addresses and assigned their counties. Hiring, NJEDA, and accelerator data require verified board slugs or reviewed input files before they appear in rankings. These counts will change on refresh; use `/api/health` for the current source status.
