@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
-import { ExternalLink, MapPin, X } from 'lucide-react';
+import { ExternalLink, Maximize2, MapPin, X } from 'lucide-react';
 import { fetchCompany } from '../api';
 import { SIGNAL_COLORS, sectorDeep } from '../lib/colors';
 import { formatDate, formatUsd } from '../lib/format';
 import { SIGNAL_ICONS, sectorIcon } from '../lib/icons';
-import { SIGNAL_LABELS, SIGNAL_TYPES, type CompanyDetail, type Signal, type Weights } from '../types';
+import { SIGNAL_LABELS, SIGNAL_TYPES, type CompanyDetail, type DatasetName, type Signal, type Weights } from '../types';
+import { StarButton } from './StarButton';
 import { SummaryReport } from './SummaryReport';
 
 interface Props {
   id: string;
   weights: Weights;
+  dataset: DatasetName;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+  onOpenDetail: () => void;
   onClose: () => void;
 }
 
@@ -18,13 +23,16 @@ function signalDetail(s: Signal): string {
 }
 
 /** Who the company is, its score, and exactly which signals produced it — with source links. */
-export function CompanyProfile({ id, weights, onClose }: Props) {
+export function CompanyProfile({ id, weights, dataset, isFavorite, onToggleFavorite, onOpenDetail, onClose }: Props) {
   const [company, setCompany] = useState<CompanyDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetchCompany(id, weights)
+    // Keep the current profile while weights change, but drop it when switching to another startup.
+    setCompany((current) => (current?.id === id ? current : null));
+    setError(null);
+    fetchCompany(id, weights, dataset)
       .then((c) => {
         if (!cancelled) {
           setCompany(c);
@@ -37,16 +45,19 @@ export function CompanyProfile({ id, weights, onClose }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [id, weights]);
+  }, [id, weights, dataset]);
 
   const SectorIcon = company ? sectorIcon(company.sector) : null;
   const contributing = company ? SIGNAL_TYPES.filter((t) => company.contributions[t] > 0) : [];
 
   return (
     <section className="card profile" aria-label="Startup profile">
-      <button type="button" className="icon-button profile-close" onClick={onClose} aria-label="Close profile">
-        <X size={20} aria-hidden="true" />
-      </button>
+      <div className="profile-actions">
+        {company && <StarButton active={isFavorite} name={company.name} onToggle={onToggleFavorite} />}
+        <button type="button" className="icon-button" onClick={onClose} aria-label="Close profile">
+          <X size={20} aria-hidden="true" />
+        </button>
+      </div>
 
       {error && <p className="error-text">{error}</p>}
       {!company && !error && <p className="muted">Loading…</p>}
@@ -77,6 +88,11 @@ export function CompanyProfile({ id, weights, onClose }: Props) {
               )}
             </p>
           )}
+
+          <button type="button" className="open-file" onClick={onOpenDetail}>
+            <Maximize2 size={16} aria-hidden="true" />
+            Open company file
+          </button>
 
           <div className="score-row">
             <p className="score">

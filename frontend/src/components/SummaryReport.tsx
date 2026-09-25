@@ -1,12 +1,13 @@
 import { useId } from 'react';
 import { Sparkles, TrendingUp } from 'lucide-react';
-import { formatDate, sourceName } from '../lib/format';
+import { formatDate } from '../lib/format';
+import { sourceInfo } from '../lib/signals';
 import type { CompanyAiEnrichment } from '../types';
 
 /** The stored LLM write-up of a company's public signals, labeled as AI-generated. */
 export function SummaryReport({ report }: { report: CompanyAiEnrichment }) {
   const titleId = useId();
-  const sources = [...new Set(report.evidenceSources.map(sourceName))];
+  const sources = [...new Set(report.evidenceSources.map((s) => sourceInfo(s).name))];
 
   return (
     <section className="summary-report" aria-labelledby={titleId}>

@@ -1,4 +1,4 @@
-import { loadDataset } from '@/lib/data';
+import { datasetFromParams, loadDataset } from '@/lib/data';
 import { loadEnrichment } from '@/lib/enrichment';
 import { scoreCompanies, weightsFromParams } from '@/lib/scoring';
 import type { CompanyDetail } from '@/lib/types';
@@ -6,7 +6,7 @@ import type { CompanyDetail } from '@/lib/types';
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const { companies, signals } = await loadDataset();
+    const { companies, signals } = await loadDataset(datasetFromParams(new URL(request.url).searchParams));
     const weights = weightsFromParams(new URL(request.url).searchParams);
 
     // Percentiles are relative to the whole published NJ company set.
