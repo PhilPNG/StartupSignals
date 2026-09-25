@@ -22,7 +22,7 @@
     { "companyId": "sample-ledger", "type": "ip", "count": 1, "date": "2025-10-05", "source": "USPTO (sample)", "sourceUrl": "https://data.uspto.gov/", "description": "1 trademark" },
 
     { "companyId": "sample-grid", "type": "grant", "amount": 250000, "date": "2025-12-01", "source": "NSF (sample)", "sourceUrl": "https://www.nsf.gov/awardsearch/", "description": "NSF SBIR Phase I" },
-    { "companyId": "sample-grid", "type": "support", "amount": 150000, "date": "2026-04-15", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
+    { "companyId": "sample-grid", "type": "grant", "amount": 150000, "date": "2026-04-15", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
     { "companyId": "sample-grid", "type": "accelerator", "count": 1, "date": "2024-09-01", "source": "Accelerator list (sample)", "sourceUrl": "https://example.com", "description": "Incubator resident" },
     { "companyId": "sample-grid", "type": "hiring", "count": 4, "date": "2026-09-18", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "4 open roles, 2 technical" },
 
@@ -40,7 +40,7 @@
     { "companyId": "sample-care-robotics", "type": "funding", "amount": 5000000, "date": "2025-11-20", "source": "SEC Form D (sample)", "sourceUrl": "https://www.sec.gov/dera/data/form-d-data-sets", "description": "Seed round" },
     { "companyId": "sample-care-robotics", "type": "accelerator", "count": 1, "date": "2025-01-15", "source": "Accelerator list (sample)", "sourceUrl": "https://example.com", "description": "Accelerator cohort" },
 
-    { "companyId": "sample-harbor-analytics", "type": "support", "amount": 75000, "date": "2026-07-01", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
+    { "companyId": "sample-harbor-analytics", "type": "grant", "amount": 75000, "date": "2026-07-01", "source": "NJEDA (sample)", "sourceUrl": "https://www.njeda.gov/", "description": "NJEDA program approval" },
     { "companyId": "sample-harbor-analytics", "type": "hiring", "count": 3, "date": "2026-09-10", "source": "Job boards (sample)", "sourceUrl": "https://example.com", "description": "3 open roles, 2 technical" }
   ]
 }

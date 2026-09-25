@@ -233,7 +233,7 @@ export function CompanyDetailView(props: Props) {
                   <dt>Non-dilutive funding</dt>
                   <dd>{facts.nonDilutive ? formatUsd(facts.nonDilutive) : '—'}</dd>
                   <span className="muted">
-                    {facts.grants.length} {facts.grants.length === 1 ? 'grant' : 'grants'} (SBIR, NIH, NSF)
+                    {facts.grants.length} {facts.grants.length === 1 ? 'grant' : 'grants'} (SBIR, NIH, NSF, NJEDA)
                   </span>
                 </div>
                 <div className="detail-card">

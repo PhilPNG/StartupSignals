@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { database } from './supabase';
-import type { Company, Dataset, Signal } from './types';
+import { SIGNAL_TYPES, type Company, type Dataset, type Signal } from './types';
 
 async function allRows<T>(table: 'companies' | 'signals'): Promise<T[]> {
   const db = database();
@@ -54,7 +54,8 @@ export async function loadDataset(dataset: DatasetName = 'live'): Promise<Datase
     .filter((r) => ids.has(String(r.company_id)))
     .map((r) => ({
       companyId: String(r.company_id),
-      type: r.type as Signal['type'],
+      // Rows stored before 'support' was folded into grants may still say 'support'.
+      type: (r.type === 'support' ? 'grant' : r.type) as Signal['type'],
       subtype: typeof r.subtype === 'string' ? r.subtype : undefined,
       amount: r.amount == null ? undefined : Number(r.amount),
       count: r.count == null ? undefined : Number(r.count),
@@ -62,7 +63,8 @@ export async function loadDataset(dataset: DatasetName = 'live'): Promise<Datase
       source: String(r.source),
       sourceUrl: String(r.source_url ?? ''),
       description: typeof r.description === 'string' ? r.description : undefined,
-    }));
+    }))
+    .filter((s) => SIGNAL_TYPES.includes(s.type));
   if (companies.length === 0) throw new Error('No active real companies have been published');
   return { companies, signals };
 }

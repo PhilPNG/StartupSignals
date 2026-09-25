@@ -50,7 +50,7 @@ Geocoding uses Mapbox only when `MAPBOX_TOKEN` and `MAPBOX_PERMANENT_GEOCODING_C
 | `GET /api/companies/:id` | One company and its linked source signals |
 | `GET /api/sectors` | Sector depth, breadth, growth, and score |
 
-The company and sector endpoints accept weight overrides such as `?funding=40&ip=25`. Missing weights use defaults (30/20/20/15/10/5). Scoring runs against the complete NJ company set on each request, then normalizes weights over signals that have data. A globally unavailable signal is excluded from the effective weights; a company with no event from an available source receives zero for that signal. `/api/health` and the `X-Active-Signals` response header expose current source coverage.
+The company and sector endpoints accept weight overrides such as `?funding=40&ip=25`. Missing weights use defaults (30/25/20/15/10 for funding, grants, hiring, IP and accelerator; NJEDA approvals count as grants). Scoring runs against the complete NJ company set on each request, then normalizes weights over signals that have data. A globally unavailable signal is excluded from the effective weights; a company with no event from an available source receives zero for that signal. `/api/health` and the `X-Active-Signals` response header expose current source coverage.
 
 `frontend/src/types.ts` mirrors `backend/src/lib/types.ts`. Keep both in sync when changing the API contract. Coordinates can be null; the frontend map omits those companies from its GeoJSON layer.
 
