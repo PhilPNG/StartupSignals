@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ChartColumn } from 'lucide-react';
 import { fetchCompanies } from './api';
-import { CompanyProfile } from './components/CompanyProfile';
+import { CompanyProfile, ProfileEmpty } from './components/CompanyProfile';
 import { Filters } from './components/Filters';
 import { Leaderboard } from './components/Leaderboard';
+import { Logo } from './components/Logo';
 import { MapView } from './components/MapView';
 import { SectorView } from './components/SectorView';
 import { WeightSliders } from './components/WeightSliders';
@@ -12,6 +14,11 @@ import type { ScoredCompany, Weights } from './types';
 
 type View = 'map' | 'sectors';
 
+const VIEWS: { id: View; label: string }[] = [
+  { id: 'map', label: 'Map' },
+  { id: 'sectors', label: 'Sectors' },
+];
+
 const uniqueSorted = (values: string[]) => [...new Set(values)].sort();
 
 export default function App() {
@@ -19,6 +26,7 @@ export default function App() {
   const [weights, setWeights] = useState<Weights>(PRESETS.default.weights);
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [companies, setCompanies] = useState<ScoredCompany[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,12 +40,23 @@ export default function App() {
         }
       })
       .catch((e: unknown) => {
-        if (!cancelled) setError(`Could not load companies — is the backend running? ${e}`);
+        if (!cancelled) setError(`Couldn't load startups. Check that the API is running, then reload. (${e})`);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [weights]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const visible = useMemo(() => applyFilters(companies, filters), [companies, filters]);
   const sectors = useMemo(() => uniqueSorted(companies.map((c) => c.sector)), [companies]);
@@ -46,33 +65,72 @@ export default function App() {
 
   return (
     <div className="app">
-      <header>
-        <h1>NJ Startup Signals</h1>
-        <nav>
-          <button className={view === 'map' ? 'active' : undefined} onClick={() => setView('map')}>
-            Map
-          </button>
-          <button className={view === 'sectors' ? 'active' : undefined} onClick={() => setView('sectors')}>
-            Sectors
-          </button>
+      <header className="topbar">
+        <div className="brand">
+          <Logo />
+          <span>NJ Startup Signals</span>
+        </div>
+        <nav className="tabs" aria-label="View">
+          {VIEWS.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              className="tab"
+              aria-pressed={view === v.id}
+              onClick={() => setView(v.id)}
+            >
+              {v.label}
+            </button>
+          ))}
         </nav>
-        {hasSample && <span className="badge">Includes sample data</span>}
+        {hasSample && (
+          <span className="sample-chip">
+            <ChartColumn size={16} aria-hidden="true" />
+            Includes sample data
+          </span>
+        )}
       </header>
 
-      {error && <p className="error banner">{error}</p>}
+      {error && (
+        <p className="banner" role="alert">
+          {error}
+        </p>
+      )}
 
       {view === 'map' ? (
-        <main className={selectedId ? 'with-profile' : undefined}>
-          <aside className="sidebar">
+        <main className="workspace">
+          <div className="column column-left">
             <WeightSliders weights={weights} onChange={setWeights} />
             <Filters filters={filters} onChange={setFilters} sectors={sectors} counties={counties} />
-            <Leaderboard companies={visible} selectedId={selectedId} onSelect={setSelectedId} />
+          </div>
+          <div className="column column-center">
+            <section className="card map-card" aria-label="Map of startups">
+              <MapView companies={visible} selectedId={selectedId} onSelect={setSelectedId} />
+            </section>
+            <Leaderboard
+              companies={visible}
+              total={companies.length}
+              loading={loading}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onClearFilters={() => setFilters(EMPTY_FILTERS)}
+            />
+          </div>
+          <aside className={selectedId ? 'column column-right' : 'column column-right is-empty'}>
+            {selectedId ? (
+              <CompanyProfile id={selectedId} weights={weights} onClose={() => setSelectedId(null)} />
+            ) : (
+              <ProfileEmpty />
+            )}
           </aside>
-          <MapView companies={visible} selectedId={selectedId} onSelect={setSelectedId} />
-          {selectedId && <CompanyProfile id={selectedId} weights={weights} onClose={() => setSelectedId(null)} />}
         </main>
       ) : (
-        <SectorView weights={weights} />
+        <main className="workspace workspace-sectors">
+          <div className="column column-left">
+            <WeightSliders weights={weights} onChange={setWeights} />
+          </div>
+          <SectorView weights={weights} />
+        </main>
       )}
     </div>
   );

@@ -1,5 +1,7 @@
-import type { FilterState } from '../lib/filters';
+import { EMPTY_FILTERS, type FilterState } from '../lib/filters';
+import { SIGNAL_ICONS } from '../lib/icons';
 import { SIGNAL_LABELS, SIGNAL_TYPES, type SignalType } from '../types';
+import { Range } from './Range';
 
 interface Props {
   filters: FilterState;
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export function Filters({ filters, onChange, sectors, counties }: Props) {
+  const isFiltered = JSON.stringify(filters) !== JSON.stringify(EMPTY_FILTERS);
   const toggleSignal = (t: SignalType) =>
     onChange({
       ...filters,
@@ -18,45 +21,73 @@ export function Filters({ filters, onChange, sectors, counties }: Props) {
     });
 
   return (
-    <section className="panel">
-      <h3>Filters</h3>
-      <label>
-        Sector
-        <select value={filters.sector} onChange={(e) => onChange({ ...filters, sector: e.target.value })}>
-          <option value="">All</option>
+    <section className="card panel" aria-labelledby="filters-title">
+      <div className="panel-head">
+        <h2 className="panel-title" id="filters-title">
+          Filters
+        </h2>
+        {isFiltered && (
+          <button type="button" className="text-button" onClick={() => onChange(EMPTY_FILTERS)}>
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      <label className="field-row">
+        <span className="row-label">Sector</span>
+        <select
+          className="select"
+          value={filters.sector}
+          onChange={(e) => onChange({ ...filters, sector: e.target.value })}
+        >
+          <option value="">All sectors</option>
           {sectors.map((s) => (
             <option key={s}>{s}</option>
           ))}
         </select>
       </label>
-      <label>
-        County
-        <select value={filters.county} onChange={(e) => onChange({ ...filters, county: e.target.value })}>
-          <option value="">All</option>
+      <label className="field-row">
+        <span className="row-label">County</span>
+        <select
+          className="select"
+          value={filters.county}
+          onChange={(e) => onChange({ ...filters, county: e.target.value })}
+        >
+          <option value="">All counties</option>
           {counties.map((c) => (
             <option key={c}>{c}</option>
           ))}
         </select>
       </label>
-      <label>
-        Min score: {filters.minScore}
-        <input
-          type="range"
+      <div className="field-row field-row--range">
+        <span className="row-label">Min score</span>
+        <Range
+          label="Minimum score"
           min={0}
           max={100}
           value={filters.minScore}
-          onChange={(e) => onChange({ ...filters, minScore: Number(e.target.value) })}
+          onChange={(minScore) => onChange({ ...filters, minScore })}
         />
-      </label>
-      <fieldset>
-        <legend>Has signal</legend>
-        {SIGNAL_TYPES.map((t) => (
-          <label key={t} className="checkbox">
-            <input type="checkbox" checked={filters.hasSignals.includes(t)} onChange={() => toggleSignal(t)} />
-            {SIGNAL_LABELS[t]}
+        <span className="row-value">{filters.minScore}</span>
+      </div>
+
+      <h3 className="subhead">Has signal</h3>
+      {SIGNAL_TYPES.map((t) => {
+        const Icon = SIGNAL_ICONS[t];
+        return (
+          <label className="switch-row" key={t}>
+            <Icon className="row-icon" size={20} aria-hidden="true" />
+            <span className="row-label">{SIGNAL_LABELS[t]}</span>
+            <input
+              className="switch"
+              type="checkbox"
+              role="switch"
+              checked={filters.hasSignals.includes(t)}
+              onChange={() => toggleSignal(t)}
+            />
           </label>
-        ))}
-      </fieldset>
+        );
+      })}
     </section>
   );
 }
