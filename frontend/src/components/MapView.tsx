@@ -143,8 +143,8 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
     // Frame the startups once, on first load; later filtering shouldn't move the camera.
     if (map && source && companies.length > 0 && !fittedRef.current) {
       const bounds = new mapboxgl.LngLatBounds();
-      for (const c of companies) bounds.extend([c.lng, c.lat]);
-      map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
+      for (const c of companies) if (c.lat != null && c.lng != null) bounds.extend([c.lng, c.lat]);
+      if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
       fittedRef.current = true;
     }
   }, [companies, loaded]);
@@ -155,9 +155,14 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
 
   useEffect(() => {
     const company = companies.find((c) => c.id === selectedId);
-    if (company && company.lat != null && company.lng != null) {
-      mapRef.current?.flyTo({ center: [company.lng, company.lat], zoom: 12 });
-    }
+    if (!company || company.lat == null || company.lng == null) return;
+    // Keep the pin clear of the profile drawer when it overlaps the map.
+    const right = window.matchMedia(DRAWER_QUERY).matches ? DRAWER_WIDTH : 0;
+    mapRef.current?.flyTo({
+      center: [company.lng, company.lat],
+      zoom: 12,
+      padding: { top: 0, bottom: 0, left: 0, right },
+    });
     // Only fly when the selection changes, not when scores re-rank.
   }, [selectedId]);
 
