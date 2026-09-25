@@ -1,35 +1,52 @@
+import { SIGNAL_ICONS } from '../lib/icons';
 import { PRESETS } from '../lib/weights';
 import { SIGNAL_LABELS, SIGNAL_TYPES, type Weights } from '../types';
+import { Range } from './Range';
 
 interface Props {
   weights: Weights;
   onChange: (weights: Weights) => void;
 }
 
+const sameWeights = (a: Weights, b: Weights) => SIGNAL_TYPES.every((t) => a[t] === b[t]);
+
 /** One slider per signal weight; the backend normalizes them to sum to 1 and re-ranks. */
 export function WeightSliders({ weights, onChange }: Props) {
   return (
-    <section className="panel">
-      <h3>Weights</h3>
+    <section className="card panel" aria-labelledby="weights-title">
+      <h2 className="panel-title" id="weights-title">
+        Weights
+      </h2>
       <div className="presets">
         {Object.values(PRESETS).map((p) => (
-          <button key={p.label} onClick={() => onChange(p.weights)}>
+          <button
+            key={p.label}
+            type="button"
+            className="preset"
+            aria-pressed={sameWeights(weights, p.weights)}
+            onClick={() => onChange(p.weights)}
+          >
             {p.label}
           </button>
         ))}
       </div>
-      {SIGNAL_TYPES.map((t) => (
-        <label key={t}>
-          {SIGNAL_LABELS[t]}: {weights[t]}
-          <input
-            type="range"
-            min={0}
-            max={50}
-            value={weights[t]}
-            onChange={(e) => onChange({ ...weights, [t]: Number(e.target.value) })}
-          />
-        </label>
-      ))}
+      {SIGNAL_TYPES.map((t) => {
+        const Icon = SIGNAL_ICONS[t];
+        return (
+          <div className="weight-row" key={t}>
+            <Icon className="row-icon" size={20} aria-hidden="true" />
+            <span className="row-label">{SIGNAL_LABELS[t]}</span>
+            <Range
+              label={`${SIGNAL_LABELS[t]} weight`}
+              min={0}
+              max={50}
+              value={weights[t]}
+              onChange={(value) => onChange({ ...weights, [t]: value })}
+            />
+            <span className="row-value">{weights[t]}</span>
+          </div>
+        );
+      })}
     </section>
   );
 }
