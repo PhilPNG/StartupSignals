@@ -6,7 +6,7 @@ import { loadAccelerators } from './sources/accelerators';
 import { fetchFormD, fetchRecentFormD } from './sources/funding';
 import { fetchNihGrants, fetchNsfGrants, fetchSbirAwards, loadNjedaAwards } from './sources/grants';
 import { fetchAdzunaJobs, fetchAtsJobs } from './sources/hiring';
-import { fetchPatentsAndTrademarks } from './sources/ip';
+import { fetchUsptoPatents } from './sources/ip';
 import type { RawRecord } from './types';
 import { database } from '../lib/supabase';
 
@@ -20,7 +20,7 @@ const sources: { name: string; load: () => Promise<RawRecord[]> }[] = [
   { name: 'ats', load: fetchAtsJobs },
   { name: 'adzuna', load: fetchAdzunaJobs },
   { name: 'accelerator', load: loadAccelerators },
-  { name: 'uspto', load: fetchPatentsAndTrademarks },
+  { name: 'uspto', load: fetchUsptoPatents },
 ];
 
 function chunks<T>(rows: T[], size = 200): T[][] {

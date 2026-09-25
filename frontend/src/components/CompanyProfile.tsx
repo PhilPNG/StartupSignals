@@ -6,6 +6,7 @@ import { formatDate, formatUsd } from '../lib/format';
 import { SIGNAL_ICONS, sectorIcon } from '../lib/icons';
 import { SIGNAL_LABELS, SIGNAL_TYPES, type CompanyDetail, type DatasetName, type Signal, type Weights } from '../types';
 import { StarButton } from './StarButton';
+import { SummaryReport } from './SummaryReport';
 
 interface Props {
   id: string;
@@ -100,6 +101,8 @@ export function CompanyProfile({ id, weights, dataset, isFavorite, onToggleFavor
             </p>
             <span className="rank-pill">Rank #{company.rank}</span>
           </div>
+
+          {company.ai && <SummaryReport report={company.ai} />}
 
           <h3 className="section-title">Signal contributions</h3>
           <div
