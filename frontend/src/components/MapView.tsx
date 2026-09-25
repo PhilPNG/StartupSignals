@@ -34,6 +34,7 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const onSelectRef = useRef(onSelect);
+  const fittedRef = useRef(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -129,8 +130,17 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
   }, []);
 
   useEffect(() => {
-    const source = mapRef.current?.getSource('companies') as mapboxgl.GeoJSONSource | undefined;
+    const map = mapRef.current;
+    const source = map?.getSource('companies') as mapboxgl.GeoJSONSource | undefined;
     source?.setData(toGeoJson(companies));
+
+    // Frame the startups once, on first load; later filtering shouldn't move the camera.
+    if (map && source && companies.length > 0 && !fittedRef.current) {
+      const bounds = new mapboxgl.LngLatBounds();
+      for (const c of companies) bounds.extend([c.lng, c.lat]);
+      map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 0 });
+      fittedRef.current = true;
+    }
   }, [companies, loaded]);
 
   useEffect(() => {
