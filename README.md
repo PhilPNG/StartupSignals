@@ -1,52 +1,59 @@
 # StartupSignals
 
-Map and ranked list of New Jersey startups, scored 0–100 from public signals: funding, grants, hiring, IP and accelerator participation. Built for the 1435 Capital challenge ([ChallengeStatement.md](ChallengeStatement.md)).
+A map and ranked list of New Jersey startups for the [1435 Capital challenge](ChallengeStatement.md). The Next.js backend ingests public signals into Supabase; the React frontend uses its JSON API. See [BACKEND_DATA_PLAN.md](BACKEND_DATA_PLAN.md) for source priorities and data-quality decisions.
 
-## Layout
+## Local setup
 
-```
-frontend/   React + Vite: Mapbox map, leaderboard, filters, weight sliders, profiles, sector view
-backend/    Next.js (API routes only) + data pipeline
-  data/sample-companies.json   labeled sample data served until the pipeline produces data/companies.json
-  data/raw/                    raw downloads (gitignored)
-  src/app/api/                 JSON endpoints
-  src/lib/scoring.ts           Startup Score + sector score
-  src/pipeline/                ingest → filter → match → geocode → cluster
-```
-
-## Getting started
+Use Node 22 or newer. The Supabase and Vite packages require it.
 
 ```bash
 npm install
-cp frontend/.env.example frontend/.env.local   # add a Mapbox public token
-cp backend/.env.example backend/.env.local     # add API keys as you get them
+cp backend/.env.example backend/.env.local
+cp frontend/.env.example frontend/.env.local
 npm run dev
 ```
 
-- Frontend: http://localhost:5173 (proxies `/api` to the backend)
-- Backend: http://localhost:3001
+Set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in `backend/.env.local`. Keep the secret server-side and out of Git. The existing Startup Signals Supabase project has the SQL files in `supabase/migrations/` applied. For a new project, apply those migrations in order before running the pipeline. Add `VITE_MAPBOX_TOKEN` to `frontend/.env.local` to show the map. The frontend runs on port 5173 and proxies `/api` to the backend on port 3001.
 
-The map shows a placeholder until `VITE_MAPBOX_TOKEN` is set; everything else works on sample data.
+If the Supabase project is unavailable, set `DEMO_SAMPLE_MODE=true` in the backend environment to serve the labeled local sample file. Real mode returns a 503 when no published companies are available; it does not silently switch to sample data.
 
-## API
-
-| Endpoint | Returns |
-| --- | --- |
-| `GET /api/health` | `{ ok: true }` |
-| `GET /api/companies` | Ranked companies with per-signal scores |
-| `GET /api/companies/:id` | One company plus its source signal records |
-| `GET /api/sectors` | Sectors ranked by depth, breadth and growth |
-
-All but `/health` accept weight overrides, e.g. `?funding=40&ip=25`. Missing weights use the defaults (30/20/20/15/10/5); weights are normalized to sum to 1.
-
-## Pipeline
+## Data ingestion
 
 ```bash
 npm run pipeline
 ```
 
-Runs `backend/src/pipeline/run.ts`. Source fetchers in `src/pipeline/sources/` are stubs with the endpoint and gotchas noted; fill them in one signal at a time. Scoring happens at request time so the weight sliders can re-rank live.
+Run from the repo root. The command logs a separate `ingestion_runs` row for each source, upserts source evidence by provider ID, resolves companies, geocodes verified NJ addresses, and atomically publishes companies and signals. A missing or failed source leaves its last successful records in place. `PIPELINE_SOURCES=nih,nsf npm run pipeline` limits a run to named sources; existing successful records from other sources remain in the published set.
 
-## Types
+| Source | Input | Current behavior |
+| --- | --- | --- |
+| SEC Form D | Official quarterly `*_d.zip` files in `backend/data/raw/` | Joins the primary issuer, submission, and offering tables; keeps the latest amendment per offering and requires a positive amount sold; the SEC may block automated downloads, so obtain ZIPs from its [dataset page](https://www.sec.gov/data-research/sec-markets-data/form-d-data-sets) |
+| SBIR/STTR | Official bulk award CSV/JSON named `sbir-awards.csv` or `.json` in `backend/data/raw/` | Streams recent NJ awards, retains Phase I and II separately, and seeds the company set; [download page](https://www.sbir.gov/data-resources) |
+| NIH RePORTER | Public API | Fetches recent NJ R43/R44/U44 small-business awards and can seed companies |
+| NSF Awards | Public API | Fetches recent NJ awards and attaches only high-confidence matches to existing companies |
+| NJEDA and accelerators | Reviewed CSVs in `backend/data/raw/` | Use the headers in `backend/data/templates/`; every row needs a source URL |
+| Greenhouse, Lever, Ashby | Verified board slugs in `backend/data/raw/ats-boards.csv` | Captures a current open-role count and technical-role share; verify the company career-page link first |
+| Adzuna, USPTO, recent SEC search | Access and matching need verification | Logged as skipped so unverified results cannot change scores |
 
-`frontend/src/types.ts` mirrors `backend/src/lib/types.ts`. Keep them in sync.
+The source downloads under `backend/data/raw/` are ignored by Git. Do not commit downloaded files or API secrets. The pipeline stores public evidence and compact, relevant provider fields in Supabase. Ambiguous same-name/different-city matches go to `match_review`; they do not affect scores until reviewed.
+
+Form D amounts are issuer-reported securities sold for an offering. They are useful as filing evidence, but do not establish a verified venture round or a company's lifetime funding.
+
+Geocoding uses Mapbox only when `MAPBOX_TOKEN` and `MAPBOX_PERMANENT_GEOCODING_CONFIRMED=true` are set. The public Census batch geocoder supplies exact NJ matches when Mapbox permanent storage is not configured. Companies without verified coordinates remain in the leaderboard and profiles, without a map pin.
+
+## API and scoring
+
+| Endpoint | Response |
+| --- | --- |
+| `GET /api/health` | Real/sample mode, company count, active signal types, latest source run status |
+| `GET /api/companies` | Ranked companies with per-signal scores and contributions |
+| `GET /api/companies/:id` | One company and its linked source signals |
+| `GET /api/sectors` | Sector depth, breadth, growth, and score |
+
+The company and sector endpoints accept weight overrides such as `?funding=40&ip=25`. Missing weights use defaults (30/20/20/15/10/5). Scoring runs against the complete NJ company set on each request, then normalizes weights over signals that have data. A globally unavailable signal is excluded from the effective weights; a company with no event from an available source receives zero for that signal. `/api/health` and the `X-Active-Signals` response header expose current source coverage.
+
+`frontend/src/types.ts` mirrors `backend/src/lib/types.ts`. Keep both in sync when changing the API contract. Coordinates can be null; the frontend map omits those companies from its GeoJSON layer.
+
+## Current source coverage
+
+As of September 25, 2026, the connected Supabase project contains 247 real companies and 632 matched signals: 55 SEC Form D funding filings, 522 SBIR awards, 45 NIH awards, and 10 NSF awards. Census geocoded 183 company addresses and assigned their counties. Hiring, IP, NJEDA, and accelerator data require verified board slugs, provider access, or reviewed input files before they appear in rankings. These counts will change on refresh; use `/api/health` for the current source status.

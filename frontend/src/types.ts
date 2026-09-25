@@ -34,8 +34,8 @@ export interface Company {
   address: string;
   city: string;
   county: string;
-  lat: number;
-  lng: number;
+  lat: number | null;
+  lng: number | null;
   website?: string;
   foundedYear?: number;
   sector: string;

@@ -19,9 +19,11 @@ interface Props {
 }
 
 function toGeoJson(companies: ScoredCompany[]) {
+  const hasCoordinates = (c: ScoredCompany): c is ScoredCompany & { lat: number; lng: number } =>
+    c.lat != null && c.lng != null;
   return {
     type: 'FeatureCollection' as const,
-    features: companies.map((c) => ({
+    features: companies.filter(hasCoordinates).map((c) => ({
       type: 'Feature' as const,
       geometry: { type: 'Point' as const, coordinates: [c.lng, c.lat] },
       properties: { id: c.id, score: c.score, color: sectorColor(c.sector) },
@@ -149,14 +151,9 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
 
   useEffect(() => {
     const company = companies.find((c) => c.id === selectedId);
-    if (!company) return;
-    // Keep the pin clear of the profile drawer when it overlaps the map.
-    const right = window.matchMedia(DRAWER_QUERY).matches ? DRAWER_WIDTH : 0;
-    mapRef.current?.flyTo({
-      center: [company.lng, company.lat],
-      zoom: 12,
-      padding: { top: 0, bottom: 0, left: 0, right },
-    });
+    if (company && company.lat != null && company.lng != null) {
+      mapRef.current?.flyTo({ center: [company.lng, company.lat], zoom: 12 });
+    }
     // Only fly when the selection changes, not when scores re-rank.
   }, [selectedId]);
 
