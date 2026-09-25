@@ -139,7 +139,7 @@ export async function loadNjedaAwards(): Promise<RawRecord[]> {
     const url = field(row, 'source_url');
     if (!name || !city || !date || !url) return [];
     return [{ source: 'njeda', externalId: field(row, 'approval_id') || `${name}:${date}`,
-      name, city, state: 'NJ', signalType: 'support', subtype: field(row, 'program'),
+      name, city, state: 'NJ', signalType: 'grant', subtype: field(row, 'program') || 'NJEDA',
       amount: money(field(row, 'amount')), count: 1, date, sourceUrl: url,
       description: field(row, 'program', 'description') || 'NJEDA approval', raw: row }];
   });

@@ -33,5 +33,4 @@ export const SIGNAL_COLORS: Record<SignalType, string> = {
   hiring: '#3b82f6',
   ip: '#8b5cf6',
   accelerator: '#ec6a8c',
-  support: '#16a39a',
 };
