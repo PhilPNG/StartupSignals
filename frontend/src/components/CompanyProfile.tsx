@@ -76,6 +76,36 @@ export function CompanyProfile({ id, weights, onClose }: Props) {
           </section>
 
           <section>
+            <h3>AI Intelligence</h3>
+
+            {company.ai ? (
+              <>
+              <p>{company.ai.summary}</p>
+
+                {company.ai.momentumSummary && (
+                <>
+                <h4>Momentum</h4>
+                <p>{company.ai.momentumSummary}</p>
+                </>
+              )}
+
+            {company.ai.keySignals.length > 0 && (
+            <>
+              <h4>Key signals</h4>
+              <ul>
+                {company.ai.keySignals.map((signal, i) => (
+                  <li key={i}>{signal}</li>
+                ))}
+              </ul>
+            </>
+          )}
+        </>
+        ) : (
+          <p className="muted">AI analysis not yet generated for this company.</p>
+          )}
+          </section>
+
+          <section>
             <h3>Score</h3>
             <p className="score">
               {company.score.toFixed(0)} <span className="muted">/ 100 · rank #{company.rank}</span>
