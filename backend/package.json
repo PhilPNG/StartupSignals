@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start -p 3001",
     "typecheck": "tsc --noEmit",
-    "pipeline": "node --env-file-if-exists=.env.local --import tsx src/pipeline/run.ts"
+    "pipeline": "node --env-file-if-exists=.env.local --import tsx src/pipeline/run.ts",
+    "enrich": "node --env-file-if-exists=.env.local --import tsx src/pipeline/enrichment/run.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
     "csv-parse": "7.0.3",
     "fflate": "0.8.3",
     "next": "^16.3.6",
+    "openai": "^7.23.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

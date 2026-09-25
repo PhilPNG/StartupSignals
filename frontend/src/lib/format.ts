@@ -8,6 +8,22 @@ export function formatDate(iso: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+const SOURCE_NAMES: [RegExp, string][] = [
+  [/^sec/, 'SEC Form D'],
+  [/^sbir/, 'SBIR / STTR'],
+  [/^nih/, 'NIH RePORTER'],
+  [/^nsf/, 'NSF Awards'],
+  [/^njeda/, 'NJEDA'],
+  [/^uspto/, 'USPTO'],
+  [/^(ats|adzuna)/, 'Job boards'],
+  [/^accelerator/, 'Accelerator list'],
+];
+
+/** Pipeline source key ("sec-form-d") → the name people know it by ("SEC Form D"). */
+export function sourceName(source: string): string {
+  return SOURCE_NAMES.find(([pattern]) => pattern.test(source))?.[1] ?? source;
+}
+
 export type ScoreTier = 'high' | 'mid' | 'low';
 
 export function scoreTier(score: number): ScoreTier {
