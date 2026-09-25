@@ -55,6 +55,26 @@ export interface CompanyDetail extends ScoredCompany {
   signals: Signal[];
 }
 
+/** `live` is the published Supabase set; `sample` is the labeled demo file. */
+export type DatasetName = 'live' | 'sample';
+
+export interface SourceRun {
+  source: string;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+  rows_accepted: number | null;
+}
+
+/** Shape of GET /api/health (frontend-only; not mirrored in the backend types). */
+export interface Health {
+  ok: boolean;
+  mode?: 'real' | 'sample';
+  companies?: number;
+  activeSignalTypes?: SignalType[];
+  sources?: SourceRun[];
+}
+
 export interface Sector {
   sector: string;
   companies: number;
