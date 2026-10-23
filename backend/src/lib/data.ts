@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { database } from './supabase';
-import type { Company, Dataset, Signal } from './types';
+import { SIGNAL_TYPES, type Company, type Dataset, type Signal } from './types';
 
 async function allRows<T>(table: 'companies' | 'signals'): Promise<T[]> {
   const db = database();
@@ -15,9 +15,16 @@ async function allRows<T>(table: 'companies' | 'signals'): Promise<T[]> {
   }
 }
 
-/** Load the active, real company set. Sample mode must be requested explicitly. */
-export async function loadDataset(): Promise<Dataset> {
-  if (process.env.DEMO_SAMPLE_MODE === 'true') {
+export type DatasetName = 'live' | 'sample';
+
+/** `?dataset=sample` serves the labeled sample file; anything else is the live Supabase set. */
+export function datasetFromParams(params: URLSearchParams): DatasetName {
+  return params.get('dataset') === 'sample' ? 'sample' : 'live';
+}
+
+/** Load the active, real company set. Sample data must be requested explicitly. */
+export async function loadDataset(dataset: DatasetName = 'live'): Promise<Dataset> {
+  if (dataset === 'sample' || process.env.DEMO_SAMPLE_MODE === 'true') {
     const sample = path.join(process.cwd(), 'data', 'sample-companies.json');
     return JSON.parse(fs.readFileSync(sample, 'utf8')) as Dataset;
   }
@@ -47,7 +54,8 @@ export async function loadDataset(): Promise<Dataset> {
     .filter((r) => ids.has(String(r.company_id)))
     .map((r) => ({
       companyId: String(r.company_id),
-      type: r.type as Signal['type'],
+      // Rows stored before 'support' was folded into grants may still say 'support'.
+      type: (r.type === 'support' ? 'grant' : r.type) as Signal['type'],
       subtype: typeof r.subtype === 'string' ? r.subtype : undefined,
       amount: r.amount == null ? undefined : Number(r.amount),
       count: r.count == null ? undefined : Number(r.count),
@@ -55,7 +63,8 @@ export async function loadDataset(): Promise<Dataset> {
       source: String(r.source),
       sourceUrl: String(r.source_url ?? ''),
       description: typeof r.description === 'string' ? r.description : undefined,
-    }));
+    }))
+    .filter((s) => SIGNAL_TYPES.includes(s.type));
   if (companies.length === 0) throw new Error('No active real companies have been published');
   return { companies, signals };
 }

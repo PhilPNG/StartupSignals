@@ -1,8 +1,8 @@
 // Mirrors backend/src/lib/types.ts — keep the two in sync.
 
-export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator' | 'support';
+export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator';
 
-export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator', 'support'];
+export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator'];
 
 export const SIGNAL_LABELS: Record<SignalType, string> = {
   funding: 'Funding',
@@ -10,7 +10,6 @@ export const SIGNAL_LABELS: Record<SignalType, string> = {
   hiring: 'Hiring',
   ip: 'IP',
   accelerator: 'Accelerator',
-  support: 'Public support',
 };
 
 export type Weights = Record<SignalType, number>;
@@ -51,8 +50,37 @@ export interface ScoredCompany extends Company {
   rank: number;
 }
 
+export interface CompanyAiEnrichment {
+  summary: string;
+  momentumSummary: string;
+  keySignals: string[];
+  evidenceSources: string[];
+  generatedAt: string;
+}
+
 export interface CompanyDetail extends ScoredCompany {
   signals: Signal[];
+  ai: CompanyAiEnrichment | null;
+}
+
+/** `live` is the published Supabase set; `sample` is the labeled demo file. */
+export type DatasetName = 'live' | 'sample';
+
+export interface SourceRun {
+  source: string;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+  rows_accepted: number | null;
+}
+
+/** Shape of GET /api/health (frontend-only; not mirrored in the backend types). */
+export interface Health {
+  ok: boolean;
+  mode?: 'real' | 'sample';
+  companies?: number;
+  activeSignalTypes?: SignalType[];
+  sources?: SourceRun[];
 }
 
 export interface Sector {

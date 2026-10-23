@@ -1,4 +1,5 @@
 import { SIGNAL_ICONS } from '../lib/icons';
+import { SIGNAL_DESCRIPTIONS } from '../lib/signals';
 import { PRESETS } from '../lib/weights';
 import { SIGNAL_LABELS, SIGNAL_TYPES, type Weights } from '../types';
 import { Range } from './Range';
@@ -35,7 +36,25 @@ export function WeightSliders({ weights, onChange }: Props) {
         return (
           <div className="weight-row" key={t}>
             <Icon className="row-icon" size={20} aria-hidden="true" />
-            <span className="row-label">{SIGNAL_LABELS[t]}</span>
+            <span className="tip">
+              <span
+                className="row-label tip-trigger"
+                tabIndex={0}
+                aria-describedby={`weight-tip-${t}`}
+                onKeyDown={(e) => {
+                  // Escape hides the tooltip without also closing the profile.
+                  if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    e.currentTarget.blur();
+                  }
+                }}
+              >
+                {SIGNAL_LABELS[t]}
+              </span>
+              <span className="tip-bubble" role="tooltip" id={`weight-tip-${t}`}>
+                {SIGNAL_DESCRIPTIONS[t]}
+              </span>
+            </span>
             <Range
               label={`${SIGNAL_LABELS[t]} weight`}
               min={0}
