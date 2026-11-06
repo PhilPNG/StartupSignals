@@ -1,10 +1,29 @@
-# StartupSignals
+# NJ Startup Signals
 
-A map and ranked list of New Jersey startups for the [1435 Capital challenge](ChallengeStatement.md). The Next.js backend ingests public signals into Supabase; the React frontend uses its JSON API. See [BACKEND_DATA_PLAN.md](BACKEND_DATA_PLAN.md) for source priorities and data-quality decisions.
+NJ Startup Signals is a hackathon project for exploring New Jersey startups through public evidence of momentum. It brings funding activity, research awards, patent records, and other available ecosystem signals into an interactive map, ranked list, and sector view. The project was built for the [1435 Capital challenge](ChallengeStatement.md).
 
-## Local setup
+Run the project at: https://startup-signals.vercel.app
 
-Use Node 22 or newer. The Supabase and Vite packages require it.
+## What the app does
+
+- Explore startups on a map and in a ranked list, with filters for sector, county, score, and signal type.
+- Change the relative weights of signals and see how company and sector rankings respond.
+- Open a company file to review its activity, score breakdown, source links, and available AI-generated summary.
+- Save companies in the browser and switch between live and labeled sample data.
+
+## Stack and data
+
+The frontend is built with React, Vite, and Mapbox. A Next.js backend serves the API and reads published company and signal records from Supabase. A separate pipeline imports and links source records; AI summaries are generated separately and stored for the app to display.
+
+| Data source                         | Signal represented                               |
+| ----------------------------------- | ------------------------------------------------ |
+| SEC Form D                          | Reported securities offerings                    |
+| SBIR/STTR, NIH RePORTER, NSF Awards | Research and small-business grants               |
+| USPTO Patent File Wrapper           | Published patent applications and issued patents |
+
+Source coverage varies by company.
+
+## Run locally
 
 ```bash
 npm install
@@ -13,50 +32,21 @@ cp frontend/.env.example frontend/.env.local
 npm run dev
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in `backend/.env.local`. Keep the secret server-side and out of Git. The existing Startup Signals Supabase project has the SQL files in `supabase/migrations/` applied. For a new project, apply those migrations in order before running the pipeline. Add `VITE_MAPBOX_TOKEN` to `frontend/.env.local` to show the map. The frontend runs on port 5173 and proxies `/api` to the backend on port 3001.
+For live data, set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` in `backend/.env.local` and apply the SQL migrations in `supabase/migrations/` to the project. Set `VITE_MAPBOX_TOKEN` in `frontend/.env.local` to display the map. Keep server-side keys out of Git. The in-app Sample data option can be used without a live database.
 
-If the Supabase project is unavailable, set `DEMO_SAMPLE_MODE=true` in the backend environment to serve the labeled local sample file. Real mode returns a 503 when no published companies are available; it does not silently switch to sample data.
+## Data jobs
 
-## Data ingestion
+Run `npm run pipeline` from the repository root to refresh configured sources. Bulk Form D and SBIR downloads go in `backend/data/raw/`; CSV formats for other sources are in `backend/data/templates/`, and optional API keys are listed in `backend/.env.example`. The pipeline records refresh status in Supabase; sources without the needed input are skipped.
 
-```bash
-npm run pipeline
-```
+With `OPENAI_API_KEY` configured, `npm run enrich -w backend -- --all` generates summary reports for published companies. The app reads stored reports through the API.
 
-Run from the repo root. The command logs a separate `ingestion_runs` row for each source, upserts source evidence by provider ID, resolves companies, geocodes verified NJ addresses, and atomically publishes companies and signals. A missing or failed source leaves its last successful records in place. `PIPELINE_SOURCES=nih,nsf npm run pipeline` limits a run to named sources; existing successful records from other sources remain in the published set.
+## API
 
-| Source | Input | Current behavior |
-| --- | --- | --- |
-| SEC Form D | Official quarterly `*_d.zip` files in `backend/data/raw/` | Joins the primary issuer, submission, and offering tables; keeps the latest amendment per offering and requires a positive amount sold; the SEC may block automated downloads, so obtain ZIPs from its [dataset page](https://www.sec.gov/data-research/sec-markets-data/form-d-data-sets) |
-| SBIR/STTR | Official bulk award CSV/JSON named `sbir-awards.csv` or `.json` in `backend/data/raw/` | Streams recent NJ awards, retains Phase I and II separately, and seeds the company set; [download page](https://www.sbir.gov/data-resources) |
-| NIH RePORTER | Public API | Fetches recent NJ R43/R44/U44 small-business awards and can seed companies |
-| NSF Awards | Public API | Fetches recent NJ awards and attaches only high-confidence matches to existing companies |
-| NJEDA and accelerators | Reviewed CSVs in `backend/data/raw/` | Use the headers in `backend/data/templates/`; every row needs a source URL |
-| Greenhouse, Lever, Ashby | Verified board slugs in `backend/data/raw/ats-boards.csv` | Captures a current open-role count and technical-role share; verify the company career-page link first |
-| USPTO Patent File Wrapper | Public API with `USPTO_API_KEY` in `backend/.env.local` | Searches known companies, requires an exact normalized applicant name and matching NJ city, and scores recent published utility applications or issued patents once per application number |
-| Adzuna, recent SEC search | Access and matching need verification | Logged as skipped so unverified results cannot change scores |
+| Endpoint                 | Returns                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `GET /api/health`        | Data availability and source refresh status                |
+| `GET /api/companies`     | Ranked companies and signal scores                         |
+| `GET /api/companies/:id` | One company, its source records, and its available summary |
+| `GET /api/sectors`       | Sector rankings and activity measures                      |
 
-The source downloads under `backend/data/raw/` are ignored by Git. Do not commit downloaded files or API secrets. The pipeline stores public evidence and compact, relevant provider fields in Supabase. Ambiguous same-name/different-city matches go to `match_review`; they do not affect scores until reviewed.
-
-Form D amounts are issuer-reported securities sold for an offering. They are useful as filing evidence, but do not establish a verified venture round or a company's lifetime funding.
-
-The USPTO refresh searches the existing company list, so it does not create companies from an IP filing. It uses public utility patent applications and grants from the Patent File Wrapper; trademarks and unpublished applications are outside this adapter. It takes a few minutes because searches are paced, and a failed search retains the last successful USPTO refresh. Run `PIPELINE_SOURCES=uspto npm run pipeline -w backend` to refresh it alone.
-
-Geocoding uses Mapbox only when `MAPBOX_TOKEN` and `MAPBOX_PERMANENT_GEOCODING_CONFIRMED=true` are set. The public Census batch geocoder supplies exact NJ matches when Mapbox permanent storage is not configured. Companies without verified coordinates remain in the leaderboard and profiles, without a map pin.
-
-## API and scoring
-
-| Endpoint | Response |
-| --- | --- |
-| `GET /api/health` | Real/sample mode, company count, active signal types, latest source run status |
-| `GET /api/companies` | Ranked companies with per-signal scores and contributions |
-| `GET /api/companies/:id` | One company and its linked source signals |
-| `GET /api/sectors` | Sector depth, breadth, growth, and score |
-
-The company and sector endpoints accept weight overrides such as `?funding=40&ip=25`. Missing weights use defaults (30/20/20/15/10/5). Scoring runs against the complete NJ company set on each request, then normalizes weights over signals that have data. A globally unavailable signal is excluded from the effective weights; a company with no event from an available source receives zero for that signal. `/api/health` and the `X-Active-Signals` response header expose current source coverage.
-
-`frontend/src/types.ts` mirrors `backend/src/lib/types.ts`. Keep both in sync when changing the API contract. Coordinates can be null; the frontend map omits those companies from its GeoJSON layer.
-
-## Current source coverage
-
-As of September 25, 2026, the connected Supabase project contains 247 real companies and 761 matched signals: 55 SEC Form D funding filings, 522 SBIR awards, 45 NIH awards, 10 NSF awards, and 129 USPTO patent applications across 46 companies. Census geocoded 183 company addresses and assigned their counties. Hiring, NJEDA, and accelerator data require verified board slugs or reviewed input files before they appear in rankings. These counts will change on refresh; use `/api/health` for the current source status.
+Company and sector requests accept signal weight query parameters, such as `?funding=40&ip=25`. Run `npm run build` to build both workspaces.

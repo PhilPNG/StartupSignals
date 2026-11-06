@@ -10,11 +10,10 @@ import {
 
 export const DEFAULT_WEIGHTS: Weights = {
   funding: 30,
-  grant: 20,
+  grant: 25,
   hiring: 20,
   ip: 15,
   accelerator: 10,
-  support: 5,
 };
 
 const MONTH_MS = 1000 * 60 * 60 * 24 * 30.44;

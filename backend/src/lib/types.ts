@@ -1,8 +1,8 @@
 // Mirrored in frontend/src/types.ts — keep the two in sync.
 
-export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator' | 'support';
+export type SignalType = 'funding' | 'grant' | 'hiring' | 'ip' | 'accelerator';
 
-export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator', 'support'];
+export const SIGNAL_TYPES: SignalType[] = ['funding', 'grant', 'hiring', 'ip', 'accelerator'];
 
 /** Relative weight per signal; normalized to sum to 1 before scoring. */
 export type Weights = Record<SignalType, number>;
@@ -51,8 +51,20 @@ export interface ScoredCompany extends Company {
   rank: number;
 }
 
+/** LLM summary of a company's public signals, generated offline by `npm run enrich`. */
+export interface CompanyAiEnrichment {
+  summary: string;
+  momentumSummary: string;
+  keySignals: string[];
+  /** Source keys of the records the summary was written from (e.g. `sbir`, `sec-form-d`). */
+  evidenceSources: string[];
+  generatedAt: string;
+}
+
 export interface CompanyDetail extends ScoredCompany {
   signals: Signal[];
+  /** Null until the enrichment job has summarized this company. */
+  ai: CompanyAiEnrichment | null;
 }
 
 export interface Sector {
